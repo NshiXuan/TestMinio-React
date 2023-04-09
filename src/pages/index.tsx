@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Md5 } from 'ts-md5/dist/md5';
+import { Progress, Space } from 'antd';
 
 export default function Home() {
   const [video, setVideo] = useState<any>()
+  const [progroess, setProgroess] = useState(0)
 
   // 定义每个分块为5M
   const size = 5 * 1024 * 1024
@@ -58,6 +60,7 @@ export default function Home() {
             }
           })
 
+          setProgroess(Math.floor((i / selectedFile.size) * 100))
           // 5.4获取下个分块序号
           chunkIndex++
         }
@@ -67,7 +70,13 @@ export default function Home() {
         mergeForm.append('fileMd5', fileMd5)
         mergeForm.append('fileName', selectedFile.name)
         mergeForm.append("chunkTotal", total + "");
-        await fetch(mergeUrl, { method: 'post', body: mergeForm })
+        await fetch(mergeUrl, { method: 'post', body: mergeForm }).then(async res => {
+          const mRes = await res.json()
+          console.log(mRes)
+          if (mRes.code == 0 && mRes.data == true) {
+            setProgroess(100)
+          }
+        })
       }
       reader.readAsArrayBuffer(firstChunk);
 
@@ -88,8 +97,15 @@ export default function Home() {
     <div>
       <div>hello</div>
       <input type="file" onChange={handleFileChange} />
+      <Space wrap>
+        <Progress type="circle" percent={progroess} />
+      </Space>
 
-      <button onClick={handleButtonClick}>获取视频</button>
+      <div>
+        <button onClick={handleButtonClick}>获取视频</button>
+      </div>
+
+
 
       {video?.url && <video className='w-[80%]' src={video.url} controls></video>}
     </div>
