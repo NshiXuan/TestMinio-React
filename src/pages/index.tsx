@@ -20,13 +20,14 @@ export default function Home() {
       // 2.定义记录第几个分块
       let chunkIndex = 0
 
-      // 3.定义文件的fileMd5
+      // 3.定义文件的fileMd5 用来给后端校验是否已上传分块
       let fileMd5 = ''
-      // 获取第一个分片进而获取第一个分片的md5作为文件存储目录
+      // 获取第一个分片进而获取第一个分片的md5作为文件存储目录 如果加密整个文件 如果文件太大会崩溃
       const firstChunk = selectedFile.slice(0, size)
 
-      // 4.获取md5
+      // 4.通过md5加密获取fileMd5
       const reader = new FileReader();
+      // reader.onload为异步
       reader.onload = (event: any) => {
         const arrayBuffer = event.target.result as ArrayBuffer;
         // 将 ArrayBuffer 对象转换为字符串进行哈希
@@ -77,6 +78,8 @@ export default function Home() {
   function handleButtonClick() {
     fetch('http://localhost:9001/files').then(async res => {
       const data = await res.json()
+
+      // 获取最新的视频
       setVideo(data.data[data.data.length - 1])
     })
   }
